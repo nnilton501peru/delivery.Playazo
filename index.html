@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery Playazo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f4f6f8;color:#1b1f24;font-size:18px;padding-bottom:96px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+header{background:#0891b2;color:#fff;padding:12px 14px;position:sticky;top:0;z-index:5;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px}
+header .nombre{font-size:20px;font-weight:700;line-height:1.2;text-align:center}
+header .botones{display:flex;gap:6px;flex-shrink:0}
+header button{height:44px;border:none;border-radius:10px;background:#0e7490;color:#fff;font-size:15px;cursor:pointer;padding:0 10px}
+header button.icono{width:44px;font-size:20px;padding:0}
+/* PORTADA DELIVERY PLAYAZO v1.2 */
+.portada{background:#eaf8ff;padding:0 0 14px}
+.portada-img{display:block;width:100%;height:auto;max-height:440px;object-fit:cover;object-position:center}
+.portada-acciones{display:grid;gap:10px;padding:14px 14px 8px}
+.portada-btn{width:100%;min-height:54px;border:0;border-radius:15px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.08)}
+.portada-btn.productos{background:linear-gradient(135deg,#0879e8,#0756c9)}
+.portada-btn.whatsapp{background:#119c4b}
+.portada-sub{font-size:14px;text-align:center;color:#155e75;padding:3px 10px 5px;font-weight:600}
+.buscar{padding:12px 12px 8px}
+.caja{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #cfd6de;border-radius:12px;padding:0 8px 0 12px;height:52px}
+.caja svg{flex-shrink:0;color:#14532d}
+.caja input{flex:1;min-width:0;height:100%;border:none;outline:none;background:transparent;font-size:18px;color:#1b1f24}
+.caja input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+.borrar{background:#15803d;color:#fff;border:none;border-radius:10px;height:38px;padding:0 14px;font-size:16px;font-weight:700;cursor:pointer}
+.borrar[hidden]{display:none}
+.cats{display:flex;gap:10px;overflow-x:auto;padding:4px 12px 12px;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cats button{flex:0 0 auto;min-height:48px;padding:10px 16px;font-size:17px;border:2px solid #cfd6de;border-radius:12px;background:#fff;color:#1b1f24;cursor:pointer}
+.cats button.activa{background:#14532d;border-color:#14532d;color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 12px}
+.card{background:#fff;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;border:2px solid transparent}
+.card.enCarrito{border-color:#0891b2}
+.foto{height:150px;background:#eaf1f7;display:flex;align-items:center;justify-content:center;font-size:52px;cursor:pointer}
+.foto img{width:100%;height:100%;object-fit:contain;background:#fff}
+.info{padding:10px;display:flex;flex-direction:column;flex:1}
+.nombreProd{font-size:17px;line-height:1.25;min-height:42px;cursor:pointer}
+.precio{font-size:22px;font-weight:700;margin-top:4px}
+.acciones{margin-top:auto;padding-top:8px}
+.btn-add{width:100%;height:50px;border:none;border-radius:12px;background:#0369a1;color:#fff;font-size:18px;font-weight:700;cursor:pointer}
+.ctrl{display:flex;align-items:center;justify-content:space-between;background:#cffafe;color:#0c4a6e;border:2px solid #0891b2;border-radius:12px;height:50px}
+.ctrl button{background:none;border:none;color:#0c4a6e;font-size:26px;width:50px;height:50px;cursor:pointer}
+.ctrl span{font-size:18px;font-weight:700}
+.agotado{background:#fde2e2;color:#9b1c1c;text-align:center;padding:14px 8px;border-radius:12px;font-weight:700;font-size:17px}
+.aviso{padding:20px;text-align:center;font-size:17px;grid-column:1/-1;color:#333}
+.barra{position:fixed;bottom:0;left:0;right:0;background:#fef3c7;color:#1c1917;border-top:2px solid #fcd34d;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;z-index:10}
+.barra .total{font-size:24px;font-weight:700;color:#0c4a6e}
+.barra button{height:52px;padding:0 18px;border:none;border-radius:12px;background:#f97316;color:#fff;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px}
+.panel{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:20}
+.panel.abierto{display:flex}
+.hoja{background:#fff;width:100%;max-height:90vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:18px}
+.hoja h2{font-size:22px;margin-bottom:6px}
+.linea{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #e3e7ec}
+.linea .datos{flex:1}
+.linea .datos b{font-size:17px;display:block;margin-bottom:2px}
+.linea .datos small{color:#555;font-size:15px}
+.mini{width:44px;height:44px;border:none;border-radius:10px;background:#eef2f6;font-size:22px;cursor:pointer;color:#1b1f24}
+.cant{font-size:19px;font-weight:700;min-width:28px;text-align:center}
+.vacio{text-align:center;color:#555;padding:20px}
+.totalPanel{font-size:22px;font-weight:700;margin-top:14px;text-align:right}
+.wa{width:100%;height:56px;border:none;border-radius:14px;background:#25d366;color:#fff;font-size:19px;font-weight:700;margin-top:14px;cursor:pointer}
+.cerrar{width:100%;height:48px;border:none;background:#eef2f6;border-radius:12px;font-size:17px;margin-top:10px;cursor:pointer;color:#1b1f24}
+.fotoGrande{width:100%;max-width:400px;aspect-ratio:1/1;margin:0 auto 14px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:120px;overflow:hidden;border:1px solid #e3e7ec}
+.fotoGrande img{width:100%;height:100%;object-fit:contain}
+.nombreGrande{font-size:24px;line-height:1.25}
+.precioGrande{font-size:30px;font-weight:700;margin:6px 0 16px}
+.det .btn-add{height:60px;font-size:21px}
+.det .ctrl{height:60px}
+.det .ctrl button{height:60px;font-size:30px}
+.det .ctrl span{font-size:22px}
+.pantalla{position:fixed;inset:0;background:#f4f6f8;z-index:25;display:none;overflow-y:auto;padding:14px}
+.pantalla.abierto{display:block}
+.pantalla .arriba{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.pantalla h2{font-size:24px;color:#14532d}
+.pantalla .volverBtn{height:48px;padding:0 14px;border:none;border-radius:12px;background:#15803d;color:#fff;font-size:16px;cursor:pointer}
+.pedido{background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;border-left:5px solid #15803d}
+.fecha{font-size:15px;color:#555}
+.items{font-size:17px;line-height:1.5;margin-top:8px;white-space:pre-line}
+.totalPedido{font-size:20px;font-weight:700;text-align:right;margin-top:8px;color:#14532d}
+.pItem{padding:6px 0;border-bottom:1px solid #f0f2f4}
+.pNombre{font-size:17px;font-weight:700;color:#1f2937}
+.pDetalle{font-size:14px;color:#4b5563}
+.subLinea{width:72px;text-align:right;font-size:16px;font-weight:700;color:#1f2937}
+.borrarHist{width:100%;height:50px;border:2px solid #dc2626;background:#fff;color:#b91c1c;border-radius:12px;font-size:16px;font-weight:700;margin-top:10px;cursor:pointer}
+.avisoVerde{background:#dcfce7;color:#14532d;padding:10px 14px;border-radius:10px;margin-top:10px;font-size:15px;font-weight:700;text-align:center}
+.fila2{display:flex;gap:10px;margin-top:16px}
+.fila2 button{flex:1;height:50px;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
+.btnRojo{background:#dc2626;color:#fff}
+.btnGris{background:#e5e7eb;color:#1f2937}
+.catItem{flex:0 0 auto;width:72px;text-align:center;cursor:pointer}
+.catCaja{width:72px;height:72px;border-radius:16px;background:#fef3c7;color:#0c4a6e;border:3px solid transparent;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.catCaja.activa{background:#0891b2;border-color:#0891b2;color:#ffffff}
+.catCaja img{width:100%;height:100%;object-fit:cover}
+.catNombre{font-size:13px;color:#0c4a6e;margin-top:6px}
+.catNombre.activa{font-weight:700;color:#0c4a6e}
+.btnVerde{background:#15803d;color:#fff}
+input{-webkit-user-select:text;user-select:text}
+.pie{text-align:center;font-size:11px;color:#9ca3af;padding:14px 12px 8px}
+</style>
+</head>
+<body>
+
+<header>
+  <button id="verPedidos">Mis pedidos</button>
+  <div class="nombre" id="titulo"></div>
+  <button class="icono" id="pantalla" aria-label="Pantalla completa">⛶</button>
+</header>
+
+<section class="portada" aria-label="Portada Delivery Playazo">
+  <img class="portada-img" src="portada-playazo-v1.jpg" alt="Portada provisional de Delivery Playazo con playa y helados Yámboly" fetchpriority="high">
+  <div class="portada-acciones">
+    <button class="portada-btn productos" id="portadaVerProductos">▣ &nbsp; Ver productos</button>
+    <button class="portada-btn whatsapp" id="portadaWhatsApp">☏ &nbsp; Realizar pedido por WhatsApp</button>
+  </div>
+  <p class="portada-sub">¡Tu antojo, directo a la playa!</p>
+</section>
+
+<div class="buscar" id="zonaProductos">
+  <div class="caja">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="buscar" type="search" placeholder="Buscar producto">
+    <button class="borrar" id="borrarBuscar" hidden>Borrar</button>
+  </div>
+</div>
+<div class="cats" id="cats"></div>
+<main class="grid" id="grid"></main>
+<footer class="pie">Delivery Playazo · portada de prueba v1.2</footer>
+
+<div class="barra">
+  <div>
+    <div id="resumen">0 unidades</div>
+    <div class="total" id="total">S/ 0.00</div>
+  </div>
+  <button id="abrir"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L22 7H6"/></svg> Ver carrito</button>
+</div>
+
+<div class="panel" id="panel">
+  <div class="hoja">
+    <h2>Tu pedido</h2>
+    <div id="lineas"></div>
+    <p class="totalPanel" id="totalPanel"></p>
+    <button class="wa" id="enviar">Pedir por WhatsApp</button>
+    <button class="cerrar" id="cerrar">Seguir comprando</button>
+  </div>
+</div>
+
+<div class="panel" id="detalle">
+  <div class="hoja det">
+    <div id="detContenido"></div>
+    <button class="cerrar" id="cerrarDet">Volver a la tienda</button>
+  </div>
+</div>
+
+<div class="pantalla" id="pedidos">
+  <div class="arriba">
+    <button class="volverBtn" id="volverTienda">← Volver a la tienda</button>
+  </div>
+  <h2>Mis pedidos</h2>
+  <p style="font-size:15px;color:#555;margin:6px 0 14px">Guardados solo en este celular.</p>
+  <div id="listaPedidos"></div>
+  <button class="borrarHist" id="borrarHist" hidden>Borrar historial</button>
+  <div class="avisoVerde" id="avisoHist" hidden>Historial borrado</div>
+</div>
+
+<div class="panel" id="confirmar" style="z-index:30">
+  <div class="hoja">
+    <h2>¿Borrar todo tu historial?</h2>
+    <p style="font-size:17px;color:#4b5563">Esto no se puede deshacer.</p>
+    <div class="fila2">
+      <button class="btnRojo" id="siBorrar">Sí, borrar</button>
+      <button class="btnGris" id="noBorrar">No, cancelar</button>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+// ====== CONFIGURACIÓN ======
+const CONFIG = {
+  nombre: "Delivery Playazo",
+  whatsapp: "51959434743",
+  hojaCSV: "https://docs.google.com/spreadsheets/d/1oq0fFFptbyxSA1K9OD9G-3QrXvTI7rio8sZ1kje-MWA/gviz/tq?tqx=out:csv&gid=0"
+};
+
+const EMOJI = { "Bebidas":"🥤", "Snacks":"🍿", "Lácteos":"🥛", "Abarrotes":"🛒", "Golosinas":"🍬", "Limpieza":"🧼", "Cigarros":"🚬" };
+const SVG_INI = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+const ICONOS = {
+  "Todas": SVG_INI + '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
+  "Bebidas": SVG_INI + '<path d="M7 8h10l-1.5 12h-7z"/><path d="M8 8l1-5h6l1 5"/><path d="M14 3l3-1"/></svg>',
+  "Licores": SVG_INI + '<path d="M10 2h4v4l2 3v12a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1V9l2-3z"/><path d="M10 12h4"/></svg>',
+  "Hielo": SVG_INI + '<rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(10 12 12)"/><path d="M9 9l6 6"/></svg>',
+  "Piqueos": SVG_INI + '<path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+  "Cigarros": SVG_INI + '<rect x="4" y="7" width="16" height="11" rx="1"/><path d="M4 11h16"/><path d="M8 7V4h8v3"/></svg>',
+  "Otros": SVG_INI + '<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>'
+};
+const PEDIDOS_KEY = "pedidos_bodega_maya_kia";
+
+let productos = [];
+let categoria = "Todas";
+let detalleId = null;
+const CARRITO_KEY = "carrito_bodega_maya_kia";
+const carrito = cargarCarrito();
+
+function cargarCarrito(){
+  try{ return JSON.parse(localStorage.getItem(CARRITO_KEY) || "{}"); }
+  catch(e){ return {}; }
+}
+
+function guardarCarrito(){
+  try{ localStorage.setItem(CARRITO_KEY, JSON.stringify(carrito)); }
+  catch(e){}
+}
+
+function parsearCSV(texto){
+  const filas = []; let fila = []; let campo = ""; let comillas = false;
+  for (let i = 0; i < texto.length; i++){
+    const c = texto[i];
+    if (comillas){
+      if (c === '"' && texto[i+1] === '"'){ campo += '"'; i++; }
+      else if (c === '"') comillas = false;
+      else campo += c;
+    } else {
+      if (c === '"') comillas = true;
+      else if (c === ',') { fila.push(campo); campo = ""; }
+      else if (c === '\n' || c === '\r'){
+        if (c === '\r' && texto[i+1] === '\n') i++;
+        fila.push(campo); filas.push(fila); fila = []; campo = "";
+      }
+      else campo += c;
+    }
+  }
+  if (campo || fila.length){ fila.push(campo); filas.push(fila); }
+  return filas;
+}
+
+function precioNumero(t){ return parseFloat(String(t).replace(/[^0-9.]/g, "")) || 0; }
+
+function nombreArchivo(n){
+  return n.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function fotoEl(p, clase){
+  const box = document.createElement("div");
+  box.className = clase;
+  const base = nombreArchivo(p.nombre);
+  box.textContent = EMOJI[p.categoria] || "📦";
+  const img = new Image();
+  img.alt = "";
+  img.onload = () => { box.textContent = ""; box.appendChild(img); };
+  img.onerror = () => {
+    if (!img.dataset.png){ img.dataset.png = "1"; img.src = base + ".png"; }
+  };
+  img.src = base + ".jpg";
+  return box;
+}
+
+async function cargarHoja(){
+  const grid = document.getElementById("grid");
+  try{
+    const r = await fetch(CONFIG.hojaCSV, { cache: "no-store" });
+    const filas = parsearCSV(await r.text());
+    const cab = filas[0].map(h => h.trim().toLowerCase());
+    const idx = n => cab.indexOf(n);
+    productos = filas.slice(1)
+      .filter(f => f[idx("producto")])
+      .map((f, i) => ({
+        id: String(f[idx("id")] || (i + 1)),
+        nombre: f[idx("producto")],
+        categoria: f[idx("categoria")] || "Otros",
+        precio: precioNumero(f[idx("precio")]),
+        agotado: (f[idx("estado")] || "").trim().toLowerCase() === "agotado"
+      }));
+    pintarCategorias();
+    pintarProductos();
+    actualizarBarra();
+  }catch(e){
+    grid.innerHTML = '<p class="aviso">No se pudo cargar la lista de productos. Revisa la conexión.</p>';
+  }
+}
+
+function categorias(){
+  return ["Todas", ...new Set(productos.map(p => p.categoria))];
+}
+
+function pintarCategorias(){
+  const cont = document.getElementById("cats");
+  cont.innerHTML = "";
+  categorias().forEach(c => {
+    const item = document.createElement("div");
+    item.className = "catItem";
+    item.onclick = () => { categoria = c; pintarCategorias(); pintarProductos(); };
+    const caja = document.createElement("div");
+    caja.className = "catCaja" + (c === categoria ? " activa" : "");
+    caja.innerHTML = ICONOS[c] || ICONOS["Otros"];
+    const img = new Image();
+    img.alt = "";
+    img.onload = () => { caja.innerHTML = ""; caja.appendChild(img); };
+    img.onerror = () => {
+      if (!img.dataset.png){ img.dataset.png = "1"; img.src = nombreArchivo(c) + ".png"; }
+    };
+    img.src = nombreArchivo(c) + ".jpg";
+    const nom = document.createElement("div");
+    nom.className = "catNombre" + (c === categoria ? " activa" : "");
+    nom.textContent = c;
+    item.append(caja, nom);
+    cont.appendChild(item);
+  });
+}
+
+function controles(id, cant){
+  const c = document.createElement("div");
+  c.className = "ctrl";
+  const menos = document.createElement("button");
+  menos.textContent = "−";
+  menos.setAttribute("aria-label", "Quitar uno");
+  menos.onclick = () => cambiar(id, -1);
+  const n = document.createElement("span");
+  n.textContent = "✓ " + cant;
+  const mas = document.createElement("button");
+  mas.textContent = "+";
+  mas.setAttribute("aria-label", "Agregar uno");
+  mas.onclick = () => cambiar(id, 1);
+  c.append(menos, n, mas);
+  return c;
+}
+
+function pintarProductos(destino){
+  const grid = destino instanceof Element ? destino : document.getElementById("grid");
+  const q = document.getElementById("buscar").value.trim().toLowerCase();
+  const lista = productos.filter(p =>
+    (categoria === "Todas" || p.categoria === categoria) &&
+    p.nombre.toLowerCase().includes(q)
+  );
+  grid.innerHTML = "";
+  if (!lista.length){
+    grid.innerHTML = '<p class="aviso">No hay productos con ese nombre.</p>';
+    return;
+  }
+  lista.forEach(p => {
+    const cant = carrito[p.id] || 0;
+    const card = document.createElement("div");
+    card.className = "card" + (cant > 0 ? " enCarrito" : "");
+    card.dataset.id = p.id;
+
+    const foto = fotoEl(p, "foto");
+    foto.onclick = () => abrirDetalle(p.id);
+
+    const info = document.createElement("div");
+    info.className = "info";
+    const nombre = document.createElement("div");
+    nombre.className = "nombreProd";
+    nombre.textContent = p.nombre;
+    nombre.onclick = () => abrirDetalle(p.id);
+    const precio = document.createElement("div");
+    precio.className = "precio";
+    precio.textContent = "S/ " + p.precio.toFixed(2);
+    const acc = document.createElement("div");
+    acc.className = "acciones";
+
+    if (p.agotado){
+      acc.innerHTML = '<div class="agotado">Agotado</div>';
+    } else if (cant === 0){
+      const b = document.createElement("button");
+      b.className = "btn-add";
+      b.textContent = "+ Agregar";
+      b.onclick = () => cambiar(p.id, 1);
+      acc.appendChild(b);
+    } else {
+      acc.appendChild(controles(p.id, cant));
+    }
+
+    info.append(nombre, precio, acc);
+    card.append(foto, info);
+    grid.appendChild(card);
+  });
+}
+
+function refrescarTarjeta(id){
+  const grid = document.getElementById("grid");
+  const viejo = grid.querySelector('[data-id="' + id + '"]');
+  if (!viejo){ pintarProductos(); return; }
+  const temp = document.createElement("div");
+  pintarProductos(temp);
+  const nueva = temp.querySelector('[data-id="' + id + '"]');
+  if (!nueva){ pintarProductos(); return; }
+  viejo.className = nueva.className;
+  viejo.querySelector(".acciones").replaceWith(nueva.querySelector(".acciones"));
+}
+
+function abrirDetalle(id){
+  detalleId = id;
+  pintarDetalle();
+  document.getElementById("detalle").classList.add("abierto");
+}
+
+function cerrarDetalle(){
+  detalleId = null;
+  document.getElementById("detalle").classList.remove("abierto");
+}
+
+function pintarDetalle(){
+  const p = productos.find(x => x.id === detalleId);
+  if (!p) return;
+  const cont = document.getElementById("detContenido");
+  cont.innerHTML = "";
+  const cant = carrito[p.id] || 0;
+  const nombre = document.createElement("div");
+  nombre.className = "nombreGrande";
+  nombre.textContent = p.nombre;
+  const precio = document.createElement("div");
+  precio.className = "precioGrande";
+  precio.textContent = "S/ " + p.precio.toFixed(2);
+  const acc = document.createElement("div");
+  if (p.agotado){
+    acc.innerHTML = '<div class="agotado">Agotado</div>';
+  } else if (cant === 0){
+    const b = document.createElement("button");
+    b.className = "btn-add";
+    b.textContent = "+ Agregar al carrito";
+    b.onclick = () => cambiar(p.id, 1);
+    acc.appendChild(b);
+  } else {
+    acc.appendChild(controles(p.id, cant));
+  }
+  cont.append(fotoEl(p, "fotoGrande"), nombre, precio, acc);
+  cont.parentElement.classList.add("det");
+}
+
+function cambiar(id, delta){
+  const n = (carrito[id] || 0) + delta;
+  if (n <= 0) delete carrito[id]; else carrito[id] = n;
+  guardarCarrito();
+  refrescarTarjeta(id);
+  actualizarBarra();
+  if (detalleId) pintarDetalle();
+  if (document.getElementById("panel").classList.contains("abierto")) pintarCarrito();
+}
+
+function totales(){
+  let uds = 0, tot = 0;
+  for (const id in carrito){
+    const p = productos.find(x => x.id === id);
+    if (p && !p.agotado){ uds += carrito[id]; tot += carrito[id] * p.precio; }
+  }
+  return { uds, tot };
+}
+
+function actualizarBarra(){
+  const { uds, tot } = totales();
+  document.getElementById("resumen").textContent = uds + (uds === 1 ? " unidad" : " unidades");
+  document.getElementById("total").textContent = "S/ " + tot.toFixed(2);
+}
+
+function pintarCarrito(){
+  const cont = document.getElementById("lineas");
+  cont.innerHTML = "";
+  const ids = Object.keys(carrito);
+  if (!ids.length){
+    cont.innerHTML = '<p class="vacio">Todavía no agregas productos.</p>';
+  }
+  ids.forEach(id => {
+    const p = productos.find(x => x.id === id);
+    if (!p) return;
+    const q = carrito[id];
+    const div = document.createElement("div");
+    div.className = "linea";
+    const datos = document.createElement("div");
+    datos.className = "datos";
+    const b = document.createElement("b");
+    b.textContent = p.nombre;
+    const s = document.createElement("small");
+    s.textContent = p.agotado ? "Agotado · no se cobra" : "S/ " + p.precio.toFixed(2) + " c/u";
+    datos.append(b, s);
+    const menos = document.createElement("button");
+    menos.className = "mini";
+    menos.textContent = "−";
+    menos.setAttribute("aria-label", "Quitar uno");
+    menos.onclick = () => cambiar(id, -1);
+    const cantEl = document.createElement("span");
+    cantEl.className = "cant";
+    cantEl.textContent = q;
+    const mas = document.createElement("button");
+    mas.className = "mini";
+    mas.textContent = "+";
+    mas.setAttribute("aria-label", "Agregar uno");
+    mas.onclick = () => cambiar(id, 1);
+    const sub = document.createElement("div");
+    sub.className = "subLinea";
+    sub.textContent = p.agotado ? "S/ 0.00" : "S/ " + (p.precio * q).toFixed(2);
+    div.append(datos, menos, cantEl, mas, sub);
+    cont.appendChild(div);
+  });
+  document.getElementById("totalPanel").textContent = "Total: S/ " + totales().tot.toFixed(2);
+}
+
+function mensajeWA(){
+  const lineas = [];
+  for (const id in carrito){
+    const p = productos.find(x => x.id === id);
+    if (!p || p.agotado) continue;
+    const q = carrito[id];
+    lineas.push("- " + q + " x " + p.nombre + "\n   S/ " + p.precio.toFixed(2) + " c/u = S/ " + (p.precio * q).toFixed(2));
+  }
+  const { tot } = totales();
+  return "Hola, quiero pedir en " + CONFIG.nombre + ":\n\n" + lineas.join("\n\n") +
+         "\n\nTOTAL: S/ " + tot.toFixed(2) + "\n\n¿Me confirman, por favor?";
+}
+
+function leerPedidos(){
+  try{ return JSON.parse(localStorage.getItem(PEDIDOS_KEY) || "[]"); }
+  catch(e){ return []; }
+}
+
+function guardarPedido(){
+  const ahora = new Date();
+  const items = [];
+  for (const id in carrito){
+    const p = productos.find(x => x.id === id);
+    if (p && !p.agotado) items.push({ nombre: p.nombre, cantidad: carrito[id], precio: p.precio });
+  }
+  const pedidos = leerPedidos();
+  pedidos.unshift({
+    fecha: ahora.toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" }),
+    hora: ahora.toLocaleTimeString("es-PE", { hour: "numeric", minute: "2-digit" }),
+    items: items,
+    total: totales().tot
+  });
+  try{ localStorage.setItem(PEDIDOS_KEY, JSON.stringify(pedidos.slice(0, 50))); }
+  catch(e){}
+}
+
+function pintarPedidos(){
+  const cont = document.getElementById("listaPedidos");
+  cont.innerHTML = "";
+  const pedidos = leerPedidos();
+  if (!pedidos.length){
+    cont.innerHTML = '<p class="vacio">Todavía no tienes pedidos guardados en este celular.</p>';
+    return;
+  }
+  pedidos.forEach(pd => {
+    const card = document.createElement("div");
+    card.className = "pedido";
+    const f = document.createElement("div");
+    f.className = "fecha";
+    f.textContent = pd.fecha + " · " + pd.hora;
+    const det = document.createElement("div");
+    det.className = "items";
+    pd.items.forEach(i => {
+      const fila = document.createElement("div");
+      fila.className = "pItem";
+      const n = document.createElement("div");
+      n.className = "pNombre";
+      n.textContent = i.cantidad + " x " + i.nombre;
+      const s = document.createElement("div");
+      s.className = "pDetalle";
+      s.textContent = "S/ " + i.precio.toFixed(2) + " c/u · Subtotal S/ " + (i.precio * i.cantidad).toFixed(2);
+      fila.append(n, s);
+      det.appendChild(fila);
+    });
+    const t = document.createElement("div");
+    t.className = "totalPedido";
+    t.textContent = "Total: S/ " + pd.total.toFixed(2);
+    card.append(f, det, t);
+    cont.appendChild(card);
+  });
+}
+
+document.getElementById("enviar").onclick = () => {
+  if (!Object.keys(carrito).length){ alert("Agrega productos primero."); return; }
+  const mensaje = mensajeWA();
+  guardarPedido();
+  window.open("https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(mensaje), "_blank");
+  for (const k in carrito) delete carrito[k];
+  guardarCarrito();
+  document.getElementById("panel").classList.remove("abierto");
+  pintarProductos();
+  actualizarBarra();
+};
+document.getElementById("abrir").onclick = () => {
+  pintarCarrito();
+  document.getElementById("panel").classList.add("abierto");
+};
+document.getElementById("cerrar").onclick = () => {
+  document.getElementById("panel").classList.remove("abierto");
+};
+document.getElementById("panel").onclick = (e) => {
+  if (e.target.id === "panel") document.getElementById("panel").classList.remove("abierto");
+};
+document.getElementById("cerrarDet").onclick = cerrarDetalle;
+document.getElementById("detalle").onclick = (e) => {
+  if (e.target.id === "detalle") cerrarDetalle();
+};
+document.getElementById("verPedidos").onclick = () => {
+  pintarPedidos();
+  actualizarBotonBorrar();
+  document.getElementById("pedidos").classList.add("abierto");
+};
+document.getElementById("volverTienda").onclick = () => {
+  document.getElementById("pedidos").classList.remove("abierto");
+};
+document.getElementById("pantalla").onclick = () => {
+  try{
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }catch(e){}
+};
+function actualizarBotonBorrar(){
+  document.getElementById("borrarHist").hidden = !leerPedidos().length;
+}
+const confirmarEl = document.getElementById("confirmar");
+document.getElementById("borrarHist").onclick = () => confirmarEl.classList.add("abierto");
+document.getElementById("noBorrar").onclick = () => confirmarEl.classList.remove("abierto");
+confirmarEl.onclick = (e) => {
+  if (e.target.id === "confirmar") confirmarEl.classList.remove("abierto");
+};
+document.getElementById("siBorrar").onclick = () => {
+  try{ localStorage.removeItem(PEDIDOS_KEY); }catch(e){}
+  confirmarEl.classList.remove("abierto");
+  pintarPedidos();
+  actualizarBotonBorrar();
+  const aviso = document.getElementById("avisoHist");
+  aviso.hidden = false;
+  setTimeout(() => { aviso.hidden = true; }, 2500);
+};
+
+const buscarEl = document.getElementById("buscar");
+const borrarEl = document.getElementById("borrarBuscar");
+buscarEl.oninput = () => {
+  borrarEl.hidden = !buscarEl.value;
+  pintarProductos();
+};
+borrarEl.onclick = () => {
+  buscarEl.value = "";
+  borrarEl.hidden = true;
+  pintarProductos();
+};
+document.getElementById("titulo").textContent = CONFIG.nombre;
+document.getElementById("portadaVerProductos").onclick = () => {
+  document.getElementById("zonaProductos").scrollIntoView({behavior:"smooth", block:"start"});
+};
+document.getElementById("portadaWhatsApp").onclick = () => {
+  const mensaje = encodeURIComponent("Hola, quiero información de Delivery Playazo.");
+  window.open("https://wa.me/" + CONFIG.whatsapp + "?text=" + mensaje, "_blank", "noopener");
+};
+
+// ====== BOTÓN ATRÁS DEL CELULAR ======
+// Cada pantalla abierta (foto grande, carrito, Mis pedidos, confirmar borrado)
+// tiene su propio paso en el historial; atrás cierra la última abierta
+// en vez de salir de la página.
+(function(){
+  const IDS = ["confirmar", "detalle", "panel", "pedidos"]; // de arriba hacia abajo
+  const el = id => document.getElementById(id);
+  const abiertas = () => IDS.filter(id => el(id).classList.contains("abierto"));
+  let pasos = 0;      // cuántos pasos de historial hemos agregado
+  let cerrando = false;
+
+  // Cierra visualmente la pantalla más arriba (sin tocar el historial)
+  function cerrarArriba(){
+    const a = abiertas();
+    if (!a.length) return;
+    if (a[0] === "detalle") detalleId = null;
+    el(a[0]).classList.remove("abierto");
+  }
+
+  // Vigila cuando se abre o se cierra una pantalla y sincroniza el historial
+  function sincronizar(){
+    if (cerrando) return;
+    const n = abiertas().length;
+    while (pasos < n){ history.pushState({pantalla: true}, ""); pasos++; }
+    if (pasos > n){
+      // se cerró con un botón de la página: quitamos los pasos sobrantes
+      const quitar = pasos - n;
+      pasos = n;
+      cerrando = true;
+      history.go(-quitar);
+      setTimeout(() => { cerrando = false; sincronizar(); }, 150);
+    }
+  }
+
+  window.addEventListener("popstate", () => {
+    if (cerrando) return;
+    if (pasos > 0){
+      pasos--;
+      cerrarArriba();
+    }
+  });
+
+  const obs = new MutationObserver(sincronizar);
+  IDS.forEach(id => obs.observe(el(id), {attributes: true, attributeFilter: ["class"]}));
+})();
+
+actualizarBarra();
+cargarHoja();
+</script>
+</body>
+</html>
