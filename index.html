@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Delivery Playazo</title>
+<title>Delivery Playazo v1.2</title>
+<meta name="theme-color" content="#0754a5">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f4f6f8;color:#1b1f24;font-size:18px;padding-bottom:96px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -12,14 +13,6 @@ header .nombre{font-size:20px;font-weight:700;line-height:1.2;text-align:center}
 header .botones{display:flex;gap:6px;flex-shrink:0}
 header button{height:44px;border:none;border-radius:10px;background:#0e7490;color:#fff;font-size:15px;cursor:pointer;padding:0 10px}
 header button.icono{width:44px;font-size:20px;padding:0}
-/* PORTADA DELIVERY PLAYAZO v1.2 */
-.portada{background:#eaf8ff;padding:0 0 14px}
-.portada-img{display:block;width:100%;height:auto;max-height:440px;object-fit:cover;object-position:center}
-.portada-acciones{display:grid;gap:10px;padding:14px 14px 8px}
-.portada-btn{width:100%;min-height:54px;border:0;border-radius:15px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.08)}
-.portada-btn.productos{background:linear-gradient(135deg,#0879e8,#0756c9)}
-.portada-btn.whatsapp{background:#119c4b}
-.portada-sub{font-size:14px;text-align:center;color:#155e75;padding:3px 10px 5px;font-weight:600}
 .buscar{padding:12px 12px 8px}
 .caja{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #cfd6de;border-radius:12px;padding:0 8px 0 12px;height:52px}
 .caja svg{flex-shrink:0;color:#14532d}
@@ -99,6 +92,17 @@ header button.icono{width:44px;font-size:20px;padding:0}
 .btnVerde{background:#15803d;color:#fff}
 input{-webkit-user-select:text;user-select:text}
 .pie{text-align:center;font-size:11px;color:#9ca3af;padding:14px 12px 8px}
+
+/* ===== Delivery Playazo v1.2: portada promocional ===== */
+.portada{padding:12px 12px 4px;background:#f4f6f8}
+.portada-marco{max-width:1100px;margin:0 auto;overflow:hidden;border-radius:18px;box-shadow:0 5px 18px rgba(0,40,90,.16);background:#d9f2ff}
+.portada-img{display:block;width:100%;height:clamp(190px,48vw,390px);object-fit:cover;object-position:center 48%}
+.portada-cta{display:flex;justify-content:center;padding:10px 0 4px}
+.portada-cta button{min-height:50px;padding:0 24px;border:0;border-radius:999px;background:#facc15;color:#10223d;font-size:18px;font-weight:800;box-shadow:0 3px 0 #dca900;cursor:pointer}
+.portada-cta button:active{transform:translateY(1px)}
+.pie{font-size:12px}
+@media(min-width:760px){.portada{padding:18px 18px 6px}.buscar,.cats{max-width:1100px;margin-left:auto;margin-right:auto}.grid{max-width:1100px;margin:0 auto;grid-template-columns:repeat(4,minmax(0,1fr));}.foto{height:190px}}
+
 </style>
 </head>
 <body>
@@ -109,16 +113,14 @@ input{-webkit-user-select:text;user-select:text}
   <button class="icono" id="pantalla" aria-label="Pantalla completa">⛶</button>
 </header>
 
-<section class="portada" aria-label="Portada Delivery Playazo">
-  <img class="portada-img" src="portada-playazo-v1.jpg" alt="Portada provisional de Delivery Playazo con playa y helados Yámboly" fetchpriority="high">
-  <div class="portada-acciones">
-    <button class="portada-btn productos" id="portadaVerProductos">▣ &nbsp; Ver productos</button>
-    <button class="portada-btn whatsapp" id="portadaWhatsApp">☏ &nbsp; Realizar pedido por WhatsApp</button>
+<section class="portada" aria-label="Bienvenida a Delivery Playazo">
+  <div class="portada-marco">
+    <img class="portada-img" src="portada-playazo-v1.2.jpg" alt="Portada de Delivery Playazo con playa tropical y helados Yámboly" fetchpriority="high">
   </div>
-  <p class="portada-sub">¡Tu antojo, directo a la playa!</p>
+  <div class="portada-cta"><button type="button" id="verProductos">🛒 Ver productos</button></div>
 </section>
 
-<div class="buscar" id="zonaProductos">
+<div class="buscar">
   <div class="caja">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
     <input id="buscar" type="search" placeholder="Buscar producto">
@@ -127,7 +129,7 @@ input{-webkit-user-select:text;user-select:text}
 </div>
 <div class="cats" id="cats"></div>
 <main class="grid" id="grid"></main>
-<footer class="pie">Delivery Playazo · portada de prueba v1.2</footer>
+<footer class="pie">Delivery Playazo v1.2 · ¡Tu antojo, directo a la playa!</footer>
 
 <div class="barra">
   <div>
@@ -197,12 +199,12 @@ const ICONOS = {
   "Cigarros": SVG_INI + '<rect x="4" y="7" width="16" height="11" rx="1"/><path d="M4 11h16"/><path d="M8 7V4h8v3"/></svg>',
   "Otros": SVG_INI + '<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>'
 };
-const PEDIDOS_KEY = "pedidos_bodega_maya_kia";
+const PEDIDOS_KEY = "pedidos_delivery_playazo_v1_2";
 
 let productos = [];
 let categoria = "Todas";
 let detalleId = null;
-const CARRITO_KEY = "carrito_bodega_maya_kia";
+const CARRITO_KEY = "carrito_delivery_playazo_v1_2";
 const carrito = cargarCarrito();
 
 function cargarCarrito(){
@@ -638,14 +640,12 @@ borrarEl.onclick = () => {
   borrarEl.hidden = true;
   pintarProductos();
 };
+document.getElementById("verProductos").onclick = () => {
+  document.getElementById("buscar").scrollIntoView({ behavior: "smooth", block: "start" });
+  setTimeout(() => document.getElementById("grid").scrollIntoView({ behavior: "smooth", block: "start" }), 180);
+};
+
 document.getElementById("titulo").textContent = CONFIG.nombre;
-document.getElementById("portadaVerProductos").onclick = () => {
-  document.getElementById("zonaProductos").scrollIntoView({behavior:"smooth", block:"start"});
-};
-document.getElementById("portadaWhatsApp").onclick = () => {
-  const mensaje = encodeURIComponent("Hola, quiero información de Delivery Playazo.");
-  window.open("https://wa.me/" + CONFIG.whatsapp + "?text=" + mensaje, "_blank", "noopener");
-};
 
 // ====== BOTÓN ATRÁS DEL CELULAR ======
 // Cada pantalla abierta (foto grande, carrito, Mis pedidos, confirmar borrado)
