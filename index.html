@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Delivery Playazo v1.5</title>
+<title>Delivery Playazo v1.6</title>
 <meta name="theme-color" content="#0754a5">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -93,7 +93,7 @@ header button.icono{width:44px;font-size:20px;padding:0}
 input{-webkit-user-select:text;user-select:text}
 .pie{text-align:center;font-size:11px;color:#9ca3af;padding:14px 12px 8px}
 
-/* ===== Delivery Playazo v1.5: portada promocional ampliada ===== */
+/* ===== Delivery Playazo v1.6: categorías manuales desde Google Sheets ===== */
 .portada{padding:8px 12px 4px;background:#f4f6f8}
 .portada-marco{max-width:1100px;margin:0 auto;overflow:hidden;border-radius:20px;box-shadow:0 5px 18px rgba(0,40,90,.16);background:#f4f6f8;line-height:0;border:0;isolation:isolate}
 .portada-img{display:block;width:100%;height:auto;min-height:0;object-fit:contain;object-position:center}
@@ -129,7 +129,7 @@ input{-webkit-user-select:text;user-select:text}
 </div>
 <div class="cats" id="cats"></div>
 <main class="grid" id="grid"></main>
-<footer class="pie">Delivery Playazo v1.5 · ¡Tu antojo, directo a la playa!</footer>
+<footer class="pie">Delivery Playazo v1.6 · ¡Tu antojo, directo a la playa!</footer>
 
 <div class="barra">
   <div>
@@ -181,11 +181,13 @@ input{-webkit-user-select:text;user-select:text}
 
 
 <script>
+// Delivery Playazo v1.6 — categorías manuales desde Google Sheets
 // ====== CONFIGURACIÓN ======
 const CONFIG = {
   nombre: "Delivery Playazo",
   whatsapp: "51959434743",
-  hojaCSV: "https://docs.google.com/spreadsheets/d/1oq0fFFptbyxSA1K9OD9G-3QrXvTI7rio8sZ1kje-MWA/gviz/tq?tqx=out:csv&gid=0"
+  hojaCSV: "https://docs.google.com/spreadsheets/d/19hg7FOCBGqrmxZLgz8bYc9FN69Tpf8ymHvcUxi_misQ/gviz/tq?tqx=out:csv&sheet=Hoja%201",
+  categoriasCSV: "https://docs.google.com/spreadsheets/d/19hg7FOCBGqrmxZLgz8bYc9FN69Tpf8ymHvcUxi_misQ/gviz/tq?tqx=out:csv&sheet=Hoja%202"
 };
 
 const EMOJI = { "Bebidas":"🥤", "Snacks":"🍿", "Lácteos":"🥛", "Abarrotes":"🛒", "Golosinas":"🍬", "Limpieza":"🧼", "Cigarros":"🚬" };
@@ -202,6 +204,7 @@ const ICONOS = {
 const PEDIDOS_KEY = "pedidos_delivery_playazo_v1_4";
 
 let productos = [];
+let categoriasConfig = [];
 let categoria = "Todas";
 let detalleId = null;
 const CARRITO_KEY = "carrito_delivery_playazo_v1_4";
@@ -260,32 +263,89 @@ function fotoEl(p, clase){
   return box;
 }
 
+function normalizarTexto(valor){
+  return String(valor ?? "").trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function valorActivo(valor){
+  return ["si", "sí", "true", "1", "activa", "activo", "yes"].includes(normalizarTexto(valor));
+}
+
+async function leerCSV(url){
+  const r = await fetch(url, { cache: "no-store" });
+  if (!r.ok) throw new Error("No se pudo leer una hoja de Google Sheets (" + r.status + ").");
+  const texto = await r.text();
+  if (!texto || texto.trim().startsWith("<!DOCTYPE html") || texto.trim().startsWith("<html")) {
+    throw new Error("Google Sheets no entregó el CSV. Revisa que el documento permita verlo mediante el enlace.");
+  }
+  return parsearCSV(texto);
+}
+
 async function cargarHoja(){
   const grid = document.getElementById("grid");
   try{
-    const r = await fetch(CONFIG.hojaCSV, { cache: "no-store" });
-    const filas = parsearCSV(await r.text());
-    const cab = filas[0].map(h => h.trim().toLowerCase());
-    const idx = n => cab.indexOf(n);
-    productos = filas.slice(1)
-      .filter(f => f[idx("producto")])
+    const [filasProductos, filasCategorias] = await Promise.all([
+      leerCSV(CONFIG.hojaCSV), leerCSV(CONFIG.categoriasCSV)
+    ]);
+    if (filasProductos.length < 2 || filasCategorias.length < 2) {
+      throw new Error("Faltan productos o categorías en las hojas de cálculo.");
+    }
+    const cab = filasProductos[0].map(h => normalizarTexto(h));
+    const idx = n => cab.indexOf(normalizarTexto(n));
+    const requeridas = ["producto", "categoria", "precio", "estado"];
+    if (requeridas.some(n => idx(n) < 0)) {
+      throw new Error("La Hoja 1 debe tener las columnas Producto, Categoría, Precio y Estado.");
+    }
+    productos = filasProductos.slice(1)
+      .filter(f => f[idx("producto")] && String(f[idx("producto")]).trim())
       .map((f, i) => ({
-        id: String(f[idx("id")] || (i + 1)),
-        nombre: f[idx("producto")],
-        categoria: f[idx("categoria")] || "Otros",
+        id: String((idx("id") >= 0 && f[idx("id")]) || (i + 1)).trim(),
+        nombre: String(f[idx("producto")]).trim(),
+        categoria: String(f[idx("categoria")] || "Otros").trim(),
         precio: precioNumero(f[idx("precio")]),
-        agotado: (f[idx("estado")] || "").trim().toLowerCase() === "agotado"
+        agotado: normalizarTexto(f[idx("estado")]) === "agotado"
       }));
+
+    const cabCat = filasCategorias[0].map(h => normalizarTexto(h));
+    const ix = n => cabCat.indexOf(normalizarTexto(n));
+    if (["categoria", "orden", "activa"].some(n => ix(n) < 0)) {
+      throw new Error("La Hoja 2 debe tener las columnas categoria, orden y activa.");
+    }
+    categoriasConfig = filasCategorias.slice(1)
+      .filter(f => f[ix("categoria")] && String(f[ix("categoria")]).trim())
+      .map(f => ({
+        nombre: String(f[ix("categoria")]).trim(),
+        orden: Number(String(f[ix("orden")] || "0").replace(",", ".")) || 9999,
+        activa: valorActivo(f[ix("activa")])
+      }))
+      .sort((a,b) => a.orden - b.orden);
+
+    const activas = new Set(categoriasConfig.filter(c => c.activa).map(c => normalizarTexto(c.nombre)));
+    // Al actualizar las hojas, retirar del carrito los productos agotados o de categorías desactivadas.
+    for (const id of Object.keys(carrito)) {
+      const prod = productos.find(p => p.id === id);
+      if (!prod || prod.agotado || !activas.has(normalizarTexto(prod.categoria))) delete carrito[id];
+    }
+    if (categoria !== "Todas" && !activas.has(normalizarTexto(categoria))) categoria = "Todas";
+    guardarCarrito();
     pintarCategorias();
     pintarProductos();
     actualizarBarra();
   }catch(e){
-    grid.innerHTML = '<p class="aviso">No se pudo cargar la lista de productos. Revisa la conexión.</p>';
+    console.error("Delivery Playazo v1.6:", e);
+    grid.innerHTML = '<p class="aviso">No se pudieron cargar los productos y las categorías. Revisa que el documento de Google Sheets permita ver las hojas mediante el enlace y que se llamen Hoja 1 y Hoja 2.</p>';
   }
 }
 
 function categorias(){
-  return ["Todas", ...new Set(productos.map(p => p.categoria))];
+  const presentes = new Set(productos.map(p => normalizarTexto(p.categoria)));
+  const ordenadas = categoriasConfig.filter(c => c.activa && presentes.has(normalizarTexto(c.nombre))).map(c => c.nombre);
+  return ["Todas", ...ordenadas];
+}
+
+function categoriaActiva(nombre){
+  const c = categoriasConfig.find(x => normalizarTexto(x.nombre) === normalizarTexto(nombre));
+  return !!c && c.activa;
 }
 
 function pintarCategorias(){
@@ -333,8 +393,10 @@ function controles(id, cant){
 function pintarProductos(destino){
   const grid = destino instanceof Element ? destino : document.getElementById("grid");
   const q = document.getElementById("buscar").value.trim().toLowerCase();
+  const activas = new Set(categoriasConfig.filter(c => c.activa).map(c => normalizarTexto(c.nombre)));
   const lista = productos.filter(p =>
-    (categoria === "Todas" || p.categoria === categoria) &&
+    activas.has(normalizarTexto(p.categoria)) &&
+    (categoria === "Todas" || normalizarTexto(p.categoria) === normalizarTexto(categoria)) &&
     p.nombre.toLowerCase().includes(q)
   );
   grid.innerHTML = "";
@@ -455,6 +517,11 @@ function actualizarDetalleAcciones(){
 }
 
 function cambiar(id, delta){
+  const prod = productos.find(p => p.id === id);
+  if (delta > 0 && (!prod || prod.agotado || !categoriaActiva(prod.categoria))){
+    alert("Este producto no está disponible para la venta en este momento.");
+    return;
+  }
   const n = (carrito[id] || 0) + delta;
   if (n <= 0) delete carrito[id]; else carrito[id] = n;
   guardarCarrito();
@@ -468,7 +535,7 @@ function totales(){
   let uds = 0, tot = 0;
   for (const id in carrito){
     const p = productos.find(x => x.id === id);
-    if (p && !p.agotado){ uds += carrito[id]; tot += carrito[id] * p.precio; }
+    if (p && !p.agotado && categoriaActiva(p.categoria)){ uds += carrito[id]; tot += carrito[id] * p.precio; }
   }
   return { uds, tot };
 }
@@ -488,7 +555,7 @@ function pintarCarrito(){
   }
   ids.forEach(id => {
     const p = productos.find(x => x.id === id);
-    if (!p) return;
+    if (!p || !categoriaActiva(p.categoria)) return;
     const q = carrito[id];
     const div = document.createElement("div");
     div.className = "linea";
@@ -525,7 +592,7 @@ function mensajeWA(){
   const lineas = [];
   for (const id in carrito){
     const p = productos.find(x => x.id === id);
-    if (!p || p.agotado) continue;
+    if (!p || p.agotado || !categoriaActiva(p.categoria)) continue;
     const q = carrito[id];
     lineas.push("- " + q + " x " + p.nombre + "\n   S/ " + p.precio.toFixed(2) + " c/u = S/ " + (p.precio * q).toFixed(2));
   }
@@ -544,7 +611,7 @@ function guardarPedido(){
   const items = [];
   for (const id in carrito){
     const p = productos.find(x => x.id === id);
-    if (p && !p.agotado) items.push({ nombre: p.nombre, cantidad: carrito[id], precio: p.precio });
+    if (p && !p.agotado && categoriaActiva(p.categoria)) items.push({ nombre: p.nombre, cantidad: carrito[id], precio: p.precio });
   }
   const pedidos = leerPedidos();
   pedidos.unshift({
@@ -594,7 +661,8 @@ function pintarPedidos(){
 }
 
 document.getElementById("enviar").onclick = () => {
-  if (!Object.keys(carrito).length){ alert("Agrega productos primero."); return; }
+  const disponibles = Object.keys(carrito).some(id => { const p = productos.find(x => x.id === id); return p && !p.agotado && categoriaActiva(p.categoria); });
+  if (!disponibles){ alert("Agrega productos disponibles de una categoría activa."); return; }
   const mensaje = mensajeWA();
   guardarPedido();
   window.open("https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(mensaje), "_blank");
