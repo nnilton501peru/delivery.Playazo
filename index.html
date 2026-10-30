@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Delivery Playazo v1.7</title>
+<title>Delivery Playazo v1.8</title>
 <meta name="theme-color" content="#0754a5">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -94,7 +94,7 @@ header button.icono{width:44px;font-size:20px;padding:0}
 input{-webkit-user-select:text;user-select:text}
 .pie{text-align:center;font-size:11px;color:#9ca3af;padding:14px 12px 8px}
 
-/* ===== Delivery Playazo v1.7: categorías manuales desde Google Sheets ===== */
+/* ===== Delivery Playazo v1.8: categorías manuales desde Google Sheets ===== */
 .portada{padding:8px 12px 4px;background:#f4f6f8}
 .portada-marco{max-width:1100px;margin:0 auto;overflow:hidden;border-radius:20px;box-shadow:0 5px 18px rgba(0,40,90,.16);background:#f4f6f8;line-height:0;border:0;isolation:isolate}
 .portada-img{display:block;width:100%;height:auto;min-height:0;object-fit:contain;object-position:center}
@@ -130,7 +130,7 @@ input{-webkit-user-select:text;user-select:text}
 </div>
 <div class="cats" id="cats"></div>
 <main class="grid" id="grid"></main>
-<footer class="pie">Delivery Playazo v1.7 · ¡Tu antojo, directo a la playa!</footer>
+<footer class="pie">Delivery Playazo v1.8 · ¡Tu antojo, directo a la playa!</footer>
 
 <div class="barra">
   <div>
@@ -182,7 +182,7 @@ input{-webkit-user-select:text;user-select:text}
 
 
 <script>
-// Delivery Playazo v1.7 — categorías manuales desde Google Sheets
+// Delivery Playazo v1.8 — categorías manuales desde Google Sheets
 // ====== CONFIGURACIÓN ======
 const CONFIG = {
   nombre: "Delivery Playazo",
@@ -333,7 +333,7 @@ async function cargarHoja(){
     pintarProductos();
     actualizarBarra();
   }catch(e){
-    console.error("Delivery Playazo v1.7:", e);
+    console.error("Delivery Playazo v1.8:", e);
     grid.innerHTML = '<p class="aviso">No se pudieron cargar los productos y las categorías. Revisa que el documento de Google Sheets permita ver las hojas mediante el enlace y que se llamen Hoja 1 y Hoja 2.</p>';
   }
 }
@@ -803,15 +803,14 @@ document.getElementById("titulo").textContent = CONFIG.nombre;
 
 actualizarBarra();
 cargarHoja();
-</script>
-
-// Evita el menú contextual del navegador al mantener pulsadas imágenes de la tienda.
+// Delivery Playazo v1.8: evita menú contextual y arrastre en imágenes.
 document.addEventListener("contextmenu", e => {
   if (e.target && (e.target.tagName === "IMG" || e.target.closest(".foto, .catCaja, .fotoGrande"))) e.preventDefault();
 });
 document.addEventListener("dragstart", e => {
   if (e.target && e.target.tagName === "IMG") e.preventDefault();
 });
+</script>
 
 </body>
 </html>
