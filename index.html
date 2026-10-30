@@ -58,7 +58,8 @@ header button.icono{width:44px;font-size:20px;padding:0}
 .vacio{text-align:center;color:#555;padding:20px}
 .totalPanel{font-size:22px;font-weight:700;margin-top:14px;text-align:right}
 .wa{width:100%;height:56px;border:none;border-radius:14px;background:#25d366;color:#fff;font-size:19px;font-weight:700;margin-top:14px;cursor:pointer}
-.cerrar{width:100%;height:48px;border:none;background:#eef2f6;border-radius:12px;font-size:17px;margin-top:10px;cursor:pointer;color:#1b1f24}\n.hoja.det > .cerrar{height:56px;background:#087e9a;color:#fff;font-size:20px;font-weight:800;border:2px solid #05657c;box-shadow:0 3px 0 #064e63}
+.cerrar{width:100%;height:48px;border:none;background:#eef2f6;border-radius:12px;font-size:17px;margin-top:10px;cursor:pointer;color:#1b1f24}
+.hoja.det > .cerrar{height:56px;background:#087e9a;color:#fff;font-size:20px;font-weight:800;border:2px solid #05657c;box-shadow:0 3px 0 #064e63}
 .fotoGrande{width:100%;max-width:400px;aspect-ratio:1/1;margin:0 auto 14px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:120px;overflow:hidden;border:1px solid #e3e7ec}
 .fotoGrande img{width:100%;height:100%;object-fit:contain}
 .nombreGrande{font-size:24px;line-height:1.25}
@@ -86,11 +87,11 @@ header button.icono{width:44px;font-size:20px;padding:0}
 .fila2 button{flex:1;height:50px;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
 .btnRojo{background:#dc2626;color:#fff}
 .btnGris{background:#e5e7eb;color:#1f2937}
-.catItem{flex:0 0 88px;width:88px;text-align:center;cursor:pointer;touch-action:manipulation}
-.catCaja{width:88px;height:88px;border-radius:18px;background:#fef3c7;color:#0c4a6e;border:3px solid #fef3c7;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.catItem{flex:0 0 auto;min-width:88px;text-align:center;cursor:pointer;touch-action:manipulation}
+.catCaja{margin:0 auto;width:88px;height:88px;border-radius:18px;background:#fef3c7;color:#0c4a6e;border:3px solid #fef3c7;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .catCaja.activa{background:#0891b2;border-color:#0891b2;color:#ffffff;box-shadow:0 0 0 2px #ffffff,0 0 0 4px #0891b2}
 .catCaja img{width:100%;height:100%;object-fit:cover;display:block}
-.catNombre{font-size:18px;line-height:1.15;color:#164e63;margin-top:8px;font-weight:600;overflow-wrap:anywhere;min-height:2.3em;display:flex;align-items:flex-start;justify-content:center}
+.catNombre{font-size:18px;line-height:1.15;color:#164e63;margin-top:8px;font-weight:600;white-space:nowrap;min-height:2.3em;display:flex;align-items:flex-start;justify-content:center}
 .catNombre.activa{font-weight:800;color:#075985}
 .btnVerde{background:#15803d;color:#fff}
 input{-webkit-user-select:text;user-select:text}
@@ -428,12 +429,12 @@ function controles(id, cant){
 
 function pintarProductos(destino){
   const grid = destino instanceof Element ? destino : document.getElementById("grid");
-  const q = document.getElementById("buscar").value.trim().toLowerCase();
+  const q = normalizarTexto(document.getElementById("buscar").value);
   const activas = new Set(categoriasConfig.filter(c => c.activa).map(c => normalizarTexto(c.nombre)));
   const lista = productos.filter(p =>
     activas.has(normalizarTexto(p.categoria)) &&
     (categoria === "Todas" || normalizarTexto(p.categoria) === normalizarTexto(categoria)) &&
-    p.nombre.toLowerCase().includes(q)
+    normalizarTexto(p.nombre).includes(q)
   );
   grid.innerHTML = "";
   if (!lista.length){
@@ -766,6 +767,18 @@ borrarEl.onclick = () => {
   borrarEl.hidden = true;
   pintarProductos();
 };
+function irAResultados(){
+  buscarEl.blur();
+  setTimeout(() => {
+    const altoHeader = document.querySelector("header").getBoundingClientRect().height;
+    const y = document.querySelector(".buscar").getBoundingClientRect().top + window.scrollY - altoHeader - 4;
+    window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+  }, 150);
+}
+buscarEl.addEventListener("keydown", e => {
+  if (e.key === "Enter"){ e.preventDefault(); irAResultados(); }
+});
+buscarEl.addEventListener("search", irAResultados);
 document.getElementById("verProductos").onclick = () => {
   const destino = document.getElementById("cats");
   const altoHeader = document.querySelector("header").getBoundingClientRect().height;
