@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Delivery Playazo v1.10</title>
-<meta name="theme-color" content="#0754a5">\n<!-- Versión de trabajo: Delivery Playazo v1.10; base conservada: v1.6 -->
+<title>Delivery Playazo v1.11</title>
+<meta name="theme-color" content="#0754a5">
+<!-- Versión de trabajo: Delivery Playazo v1.11; base conservada: v1.6 -->
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}\n.catCaja img,.foto img,.fotoGrande img{pointer-events:none}\nbody{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f4f6f8;color:#1b1f24;font-size:18px;padding-bottom:96px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.catCaja img,.foto img,.fotoGrande img{pointer-events:none}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f4f6f8;color:#1b1f24;font-size:18px;padding-bottom:96px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 header{background:#0891b2;color:#fff;padding:12px 14px;position:sticky;top:0;z-index:5;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px}
 header .nombre{font-size:20px;font-weight:700;line-height:1.2;text-align:center}
 header .botones{display:flex;gap:6px;flex-shrink:0}
@@ -103,6 +106,11 @@ input{-webkit-user-select:text;user-select:text}
 .pie{font-size:12px}
 @media(min-width:760px){.portada{padding:18px 18px 6px}.buscar,.cats{max-width:1100px;margin-left:auto;margin-right:auto}.grid{max-width:1100px;margin:0 auto;grid-template-columns:repeat(4,minmax(0,1fr));}.foto{height:190px}}
 
+
+/* v1.11: espacio final para llegar al último producto sin que el carrito lo tape. */
+html{min-height:100%;overflow-y:auto}
+body{min-height:100%;padding-bottom:calc(96px + env(safe-area-inset-bottom));overflow-y:visible;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+#grid{padding-bottom:calc(150px + env(safe-area-inset-bottom));}
 </style>
 </head>
 <body>
@@ -129,7 +137,7 @@ input{-webkit-user-select:text;user-select:text}
 </div>
 <div class="cats" id="cats"></div>
 <main class="grid" id="grid"></main>
-<footer class="pie">Delivery Playazo v1.6 · ¡Tu antojo, directo a la playa!</footer>
+<footer class="pie">Delivery Playazo v1.11 · ¡Tu antojo, directo a la playa!</footer>
 
 <div class="barra">
   <div>
