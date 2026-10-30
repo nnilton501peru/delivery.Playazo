@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Delivery Playazo v1.8</title>
+<title>Delivery Playazo v1.9</title>
 <meta name="theme-color" content="#0754a5">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -28,7 +28,7 @@ header button.icono{width:44px;font-size:20px;padding:0}
 .card{background:#fff;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;border:2px solid transparent}
 .card.enCarrito{border-color:#0891b2}
 .foto{height:150px;background:#eaf1f7;display:flex;align-items:center;justify-content:center;font-size:52px;cursor:pointer}
-.foto img{width:100%;height:100%;object-fit:contain;background:#fff}
+.foto img{width:100%;height:100%;object-fit:contain;background:#fff;pointer-events:none;-webkit-user-drag:none;user-select:none}
 .info{padding:10px;display:flex;flex-direction:column;flex:1}
 .nombreProd{font-size:17px;line-height:1.25;min-height:42px;cursor:pointer}
 .precio{font-size:22px;font-weight:700;margin-top:4px}
@@ -86,7 +86,7 @@ header button.icono{width:44px;font-size:20px;padding:0}
 .catItem{flex:0 0 88px;width:88px;text-align:center;cursor:pointer;touch-action:manipulation}
 .catCaja{width:88px;height:88px;border-radius:18px;background:#fef3c7;color:#0c4a6e;border:3px solid #fef3c7;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .catCaja.activa{background:#0891b2;border-color:#0891b2;color:#ffffff;box-shadow:0 0 0 2px #ffffff,0 0 0 4px #0891b2}
-.catCaja img{width:100%;height:100%;object-fit:cover;display:block}
+.catCaja img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none;user-select:none}
 .catNombre{font-size:18px;line-height:1.15;color:#164e63;margin-top:8px;font-weight:600;overflow-wrap:anywhere;min-height:2.3em;display:flex;align-items:flex-start;justify-content:center}
 .catNombre.largo{font-size:14px;line-height:1.2;overflow-wrap:normal;word-break:normal}
 .catNombre.activa{font-weight:800;color:#075985}
@@ -94,7 +94,7 @@ header button.icono{width:44px;font-size:20px;padding:0}
 input{-webkit-user-select:text;user-select:text}
 .pie{text-align:center;font-size:11px;color:#9ca3af;padding:14px 12px 8px}
 
-/* ===== Delivery Playazo v1.8: categorías manuales desde Google Sheets ===== */
+/* ===== Delivery Playazo v1.9: tarjetas persistentes y categorías desde Google Sheets ===== */
 .portada{padding:8px 12px 4px;background:#f4f6f8}
 .portada-marco{max-width:1100px;margin:0 auto;overflow:hidden;border-radius:20px;box-shadow:0 5px 18px rgba(0,40,90,.16);background:#f4f6f8;line-height:0;border:0;isolation:isolate}
 .portada-img{display:block;width:100%;height:auto;min-height:0;object-fit:contain;object-position:center}
@@ -333,7 +333,7 @@ async function cargarHoja(){
     pintarProductos();
     actualizarBarra();
   }catch(e){
-    console.error("Delivery Playazo v1.8:", e);
+    console.error("Delivery Playazo v1.9:", e);
     grid.innerHTML = '<p class="aviso">No se pudieron cargar los productos y las categorías. Revisa que el documento de Google Sheets permita ver las hojas mediante el enlace y que se llamen Hoja 1 y Hoja 2.</p>';
   }
 }
@@ -406,59 +406,126 @@ function controles(id, cant){
   return c;
 }
 
-function pintarProductos(destino){
-  const grid = destino instanceof Element ? destino : document.getElementById("grid");
-  const q = document.getElementById("buscar").value.trim().toLowerCase();
-  const activas = new Set(categoriasConfig.filter(c => c.activa).map(c => normalizarTexto(c.nombre)));
-  const lista = productos.filter(p =>
-    activas.has(normalizarTexto(p.categoria)) &&
-    (categoria === "Todas" || normalizarTexto(p.categoria) === normalizarTexto(categoria)) &&
-    p.nombre.toLowerCase().includes(q)
-  );
-  grid.innerHTML = "";
-  if (!lista.length){
-    grid.innerHTML = '<p class="aviso">No hay productos con ese nombre.</p>';
-    return;
-  }
-  lista.forEach(p => {
-    const cant = carrito[p.id] || 0;
-    const card = document.createElement("div");
-    card.className = "card" + (cant > 0 ? " enCarrito" : "");
-    card.dataset.id = p.id;
+// v1.9: conservar las tarjetas y sus imágenes al cambiar de categoría.
+const tarjetasProductos = new Map();
 
-    const foto = fotoEl(p, "foto");
-    foto.onclick = () => abrirDetalle(p.id);
+function crearTarjetaProducto(p){
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.id = String(p.id);
 
-    const info = document.createElement("div");
-    info.className = "info";
-    const nombre = document.createElement("div");
-    nombre.className = "nombreProd";
-    nombre.textContent = p.nombre;
-    nombre.onclick = () => abrirDetalle(p.id);
-    const precio = document.createElement("div");
-    precio.className = "precio";
-    precio.textContent = "S/ " + p.precio.toFixed(2);
-    const acc = document.createElement("div");
-    acc.className = "acciones";
+  // La fotografía se crea una sola vez por producto y se conserva en el mapa.
+  const foto = fotoEl(p, "foto");
+  foto.setAttribute("draggable", "false");
+  foto.querySelector("img")?.setAttribute("draggable", "false");
+  foto.onclick = () => abrirDetalle(p.id);
 
-    if (p.agotado){
-      acc.innerHTML = '<div class="agotado">Agotado</div>';
-    } else if (cant === 0){
-      const b = document.createElement("button");
-      b.className = "btn-add";
-      b.textContent = "+ Agregar";
-      b.onclick = () => cambiar(p.id, 1);
-      acc.appendChild(b);
-    } else {
-      acc.appendChild(controles(p.id, cant));
-    }
-
-    info.append(nombre, precio, acc);
-    card.append(foto, info);
-    grid.appendChild(card);
-  });
+  const info = document.createElement("div");
+  info.className = "info";
+  const nombre = document.createElement("div");
+  nombre.className = "nombreProd";
+  nombre.onclick = () => abrirDetalle(p.id);
+  const precio = document.createElement("div");
+  precio.className = "precio";
+  const acc = document.createElement("div");
+  acc.className = "acciones";
+  info.append(nombre, precio, acc);
+  card.append(foto, info);
+  card._partes = { nombre, precio, acc, foto };
+  return card;
 }
 
+function actualizarTarjetaProducto(card, p){
+  const cant = carrito[p.id] || 0;
+  const partes = card._partes;
+  card.className = "card" + (cant > 0 ? " enCarrito" : "");
+  partes.nombre.textContent = p.nombre;
+  partes.precio.textContent = "S/ " + p.precio.toFixed(2);
+  partes.nombre.onclick = () => abrirDetalle(p.id);
+  partes.foto.onclick = () => abrirDetalle(p.id);
+
+  // Solo se reemplazan los controles, nunca la foto del producto.
+  const acciones = document.createElement("div");
+  acciones.className = "acciones";
+  if (p.agotado){
+    const agotado = document.createElement("div");
+    agotado.className = "agotado";
+    agotado.textContent = "Agotado";
+    acciones.appendChild(agotado);
+  } else if (cant === 0){
+    const b = document.createElement("button");
+    b.className = "btn-add";
+    b.textContent = "+ Agregar";
+    b.onclick = () => cambiar(p.id, 1);
+    acciones.appendChild(b);
+  } else {
+    acciones.appendChild(controles(p.id, cant));
+  }
+  partes.acc.replaceWith(acciones);
+  partes.acc = acciones;
+}
+
+function pintarProductos(destino){
+  const grid = destino instanceof Element ? destino : document.getElementById("grid");
+  // Para paneles temporales se mantiene el comportamiento independiente original.
+  if (grid !== document.getElementById("grid")) {
+    const q = document.getElementById("buscar").value.trim().toLowerCase();
+    const activas = new Set(categoriasConfig.filter(c => c.activa).map(c => normalizarTexto(c.nombre)));
+    const lista = productos.filter(p => activas.has(normalizarTexto(p.categoria)) &&
+      (categoria === "Todas" || normalizarTexto(p.categoria) === normalizarTexto(categoria)) && p.nombre.toLowerCase().includes(q));
+    grid.replaceChildren();
+    lista.forEach(p => {
+      const card = crearTarjetaProducto(p);
+      actualizarTarjetaProducto(card, p);
+      grid.appendChild(card);
+    });
+    return;
+  }
+
+  const q = document.getElementById("buscar").value.trim().toLowerCase();
+  const activas = new Set(categoriasConfig.filter(c => c.activa).map(c => normalizarTexto(c.nombre)));
+  const disponibles = productos.filter(p => activas.has(normalizarTexto(p.categoria)));
+  const idsVigentes = new Set(disponibles.map(p => String(p.id)));
+
+  // Retirar solo productos eliminados de la hoja; conservar los demás nodos e imágenes.
+  for (const [id, card] of tarjetasProductos){
+    if (!idsVigentes.has(id)){
+      card.remove();
+      tarjetasProductos.delete(id);
+    }
+  }
+
+  let visibles = 0;
+  const ordenTarjetas = [];
+  disponibles.forEach(p => {
+    const id = String(p.id);
+    let card = tarjetasProductos.get(id);
+    if (!card){
+      card = crearTarjetaProducto(p);
+      tarjetasProductos.set(id, card);
+      grid.appendChild(card);
+    }
+    actualizarTarjetaProducto(card, p);
+    const coincideCategoria = categoria === "Todas" || normalizarTexto(p.categoria) === normalizarTexto(categoria);
+    const coincideBusqueda = p.nombre.toLowerCase().includes(q);
+    card.hidden = !(coincideCategoria && coincideBusqueda);
+    if (!card.hidden) visibles++;
+    // Guardar el orden deseado; no mover nodos que ya están en su posición.
+    ordenTarjetas.push(card);
+  });
+  ordenTarjetas.forEach((card, index) => {
+    const actual = grid.children[index];
+    if (actual !== card) grid.insertBefore(card, actual || null);
+  });
+
+  let aviso = grid.querySelector(":scope > .aviso");
+  if (visibles === 0){
+    if (!aviso){ aviso = document.createElement("p"); aviso.className = "aviso"; grid.appendChild(aviso); }
+    aviso.textContent = "No hay productos con ese nombre.";
+  } else if (aviso){
+    aviso.remove();
+  }
+}
 function refrescarTarjeta(id){
   const grid = document.getElementById("grid");
   const viejo = grid.querySelector('[data-id="' + id + '"]');
@@ -803,7 +870,7 @@ document.getElementById("titulo").textContent = CONFIG.nombre;
 
 actualizarBarra();
 cargarHoja();
-// Delivery Playazo v1.8: evita menú contextual y arrastre en imágenes.
+// Delivery Playazo v1.9: evita menú contextual y arrastre en imágenes.
 document.addEventListener("contextmenu", e => {
   if (e.target && (e.target.tagName === "IMG" || e.target.closest(".foto, .catCaja, .fotoGrande"))) e.preventDefault();
 });
