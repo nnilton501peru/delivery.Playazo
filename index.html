@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Delivery Playazo v1.6</title>
+<title>Delivery Playazo v1.7</title>
 <meta name="theme-color" content="#0754a5">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -88,12 +88,13 @@ header button.icono{width:44px;font-size:20px;padding:0}
 .catCaja.activa{background:#0891b2;border-color:#0891b2;color:#ffffff;box-shadow:0 0 0 2px #ffffff,0 0 0 4px #0891b2}
 .catCaja img{width:100%;height:100%;object-fit:cover;display:block}
 .catNombre{font-size:18px;line-height:1.15;color:#164e63;margin-top:8px;font-weight:600;overflow-wrap:anywhere;min-height:2.3em;display:flex;align-items:flex-start;justify-content:center}
+.catNombre.largo{font-size:14px;line-height:1.2;overflow-wrap:normal;word-break:normal}
 .catNombre.activa{font-weight:800;color:#075985}
 .btnVerde{background:#15803d;color:#fff}
 input{-webkit-user-select:text;user-select:text}
 .pie{text-align:center;font-size:11px;color:#9ca3af;padding:14px 12px 8px}
 
-/* ===== Delivery Playazo v1.6: categorías manuales desde Google Sheets ===== */
+/* ===== Delivery Playazo v1.7: categorías manuales desde Google Sheets ===== */
 .portada{padding:8px 12px 4px;background:#f4f6f8}
 .portada-marco{max-width:1100px;margin:0 auto;overflow:hidden;border-radius:20px;box-shadow:0 5px 18px rgba(0,40,90,.16);background:#f4f6f8;line-height:0;border:0;isolation:isolate}
 .portada-img{display:block;width:100%;height:auto;min-height:0;object-fit:contain;object-position:center}
@@ -129,7 +130,7 @@ input{-webkit-user-select:text;user-select:text}
 </div>
 <div class="cats" id="cats"></div>
 <main class="grid" id="grid"></main>
-<footer class="pie">Delivery Playazo v1.6 · ¡Tu antojo, directo a la playa!</footer>
+<footer class="pie">Delivery Playazo v1.7 · ¡Tu antojo, directo a la playa!</footer>
 
 <div class="barra">
   <div>
@@ -181,7 +182,7 @@ input{-webkit-user-select:text;user-select:text}
 
 
 <script>
-// Delivery Playazo v1.6 — categorías manuales desde Google Sheets
+// Delivery Playazo v1.7 — categorías manuales desde Google Sheets
 // ====== CONFIGURACIÓN ======
 const CONFIG = {
   nombre: "Delivery Playazo",
@@ -332,7 +333,7 @@ async function cargarHoja(){
     pintarProductos();
     actualizarBarra();
   }catch(e){
-    console.error("Delivery Playazo v1.6:", e);
+    console.error("Delivery Playazo v1.7:", e);
     grid.innerHTML = '<p class="aviso">No se pudieron cargar los productos y las categorías. Revisa que el documento de Google Sheets permita ver las hojas mediante el enlace y que se llamen Hoja 1 y Hoja 2.</p>';
   }
 }
@@ -354,23 +355,38 @@ function pintarCategorias(){
   categorias().forEach(c => {
     const item = document.createElement("div");
     item.className = "catItem";
-    item.onclick = () => { categoria = c; pintarCategorias(); pintarProductos(); };
+    item.dataset.categoria = c;
+    item.setAttribute("role", "button");
+    item.setAttribute("tabindex", "0");
+    item.onclick = () => seleccionarCategoria(c);
+    item.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); seleccionarCategoria(c); } };
     const caja = document.createElement("div");
     caja.className = "catCaja" + (c === categoria ? " activa" : "");
     caja.innerHTML = ICONOS[c] || ICONOS["Otros"];
     const img = new Image();
     img.alt = "";
-    img.onload = () => { caja.innerHTML = ""; caja.appendChild(img); };
+    img.draggable = false;
+    img.onload = () => { caja.replaceChildren(img); };
     img.onerror = () => {
       if (!img.dataset.png){ img.dataset.png = "1"; img.src = nombreArchivo(c) + ".png"; }
     };
     img.src = nombreArchivo(c) + ".jpg";
     const nom = document.createElement("div");
-    nom.className = "catNombre" + (c === categoria ? " activa" : "");
+    nom.className = "catNombre" + (c.length > 10 ? " largo" : "") + (c === categoria ? " activa" : "");
     nom.textContent = c;
     item.append(caja, nom);
     cont.appendChild(item);
   });
+}
+
+function seleccionarCategoria(c){
+  categoria = c;
+  document.querySelectorAll("#cats .catItem").forEach(item => {
+    const activa = item.dataset.categoria === c;
+    item.querySelector(".catCaja")?.classList.toggle("activa", activa);
+    item.querySelector(".catNombre")?.classList.toggle("activa", activa);
+  });
+  pintarProductos();
 }
 
 function controles(id, cant){
@@ -788,5 +804,14 @@ document.getElementById("titulo").textContent = CONFIG.nombre;
 actualizarBarra();
 cargarHoja();
 </script>
+
+// Evita el menú contextual del navegador al mantener pulsadas imágenes de la tienda.
+document.addEventListener("contextmenu", e => {
+  if (e.target && (e.target.tagName === "IMG" || e.target.closest(".foto, .catCaja, .fotoGrande"))) e.preventDefault();
+});
+document.addEventListener("dragstart", e => {
+  if (e.target && e.target.tagName === "IMG") e.preventDefault();
+});
+
 </body>
 </html>
