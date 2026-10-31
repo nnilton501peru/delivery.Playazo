@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Delivery Playazo v1.12</title>
+<title>Delivery Playazo v1.13</title>
 <meta name="theme-color" content="#0754a5">
-<!-- Versión de trabajo: Delivery Playazo v1.12; base conservada: v1.6 -->
+<!-- Versión de trabajo: Delivery Playazo v1.13; base conservada: v1.12; mejoras de carga progresiva -->
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
@@ -137,9 +137,9 @@ body{min-height:100%;padding-bottom:calc(96px + env(safe-area-inset-bottom));ove
     <button class="borrar" id="borrarBuscar" hidden>Buscar</button>
   </div>
 </div>
-<div class="cats" id="cats"></div>
-<main class="grid" id="grid"></main>
-<footer class="pie">Delivery Playazo v1.12 · ¡Tu antojo, directo a la playa!</footer>
+<div class="cats" id="cats"><p class="aviso cargaInicial">Cargando categorías…</p></div>
+<main class="grid" id="grid"><p class="aviso cargaInicial">Cargando productos…</p></main>
+<footer class="pie">Delivery Playazo v1.13 · ¡Tu antojo, directo a la playa!</footer>
 
 <div class="barra">
   <div>
@@ -261,9 +261,20 @@ function nombreArchivo(n){
 
 // v1.10: reutiliza imágenes ya cargadas para reducir parpadeos al cambiar de vista.
 const cacheImagenes = new Map();
+const imagenesFallidas = new Set();
+// v1.13: las fotos de productos se solicitan al acercarse a la pantalla.
+const observadorFotos = "IntersectionObserver" in window ? new IntersectionObserver((entradas) => {
+  entradas.forEach(entrada => {
+    if (!entrada.isIntersecting) return;
+    const caja = entrada.target;
+    observadorFotos.unobserve(caja);
+    cargarFotoEnCaja(caja);
+  });
+}, { rootMargin: "250px 0px" }) : null;
 function imagenPreparada(url, alternativa){
   const clave = url + "|" + (alternativa || "");
   if (cacheImagenes.has(clave)) return cacheImagenes.get(clave);
+  if (imagenesFallidas.has(clave)) return Promise.resolve({src: "", encontrada: false});
   const promesa = new Promise(resolve => {
     const img = new Image();
     img.alt = "";
@@ -285,19 +296,30 @@ function imagenPreparada(url, alternativa){
   return promesa;
 }
 
-function fotoEl(p, clase){
-  const box = document.createElement("div");
-  box.className = clase;
-  const base = nombreArchivo(p.nombre);
-  box.textContent = EMOJI[p.categoria] || "📦";
+function cargarFotoEnCaja(box){
+  if (!box || box.dataset.fotoIniciada === "si") return;
+  box.dataset.fotoIniciada = "si";
+  const base = box.dataset.baseFoto || "";
+  const nombre = box.dataset.nombreFoto || "";
   imagenPreparada(base + ".jpg", base + ".png").then(resultado => {
     if (!resultado.encontrada || !box.isConnected) return;
     const img = document.createElement("img");
-    img.alt = p.nombre || "";
+    img.alt = nombre;
     img.draggable = false;
+    img.loading = "lazy";
+    img.decoding = "async";
     img.src = resultado.src;
     box.replaceChildren(img);
   });
+}
+function fotoEl(p, clase){
+  const box = document.createElement("div");
+  box.className = clase;
+  box.dataset.baseFoto = nombreArchivo(p.nombre);
+  box.dataset.nombreFoto = p.nombre || "";
+  box.textContent = EMOJI[p.categoria] || "📦";
+  if (observadorFotos) observadorFotos.observe(box);
+  else cargarFotoEnCaja(box);
   return box;
 }
 
@@ -370,7 +392,7 @@ async function cargarHoja(){
     pintarProductos();
     actualizarBarra();
   }catch(e){
-    console.error("Delivery Playazo v1.6:", e);
+    console.error("Delivery Playazo v1.13:", e);
     grid.innerHTML = '<p class="aviso">No se pudieron cargar los productos y las categorías. Revisa que el documento de Google Sheets permita ver las hojas mediante el enlace y que se llamen Hoja 1 y Hoja 2.</p>';
   }
 }
@@ -401,6 +423,8 @@ function pintarCategorias(){
       const img = document.createElement("img");
       img.alt = c;
       img.draggable = false;
+      img.decoding = "async";
+      img.loading = "lazy";
       img.src = resultado.src;
       caja.replaceChildren(img);
     });
